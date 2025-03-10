@@ -19,15 +19,15 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <AchievementsProvider> {/* Wrap the entire app with AchievementsProvider */}
-      <html lang="en">
-        <head />
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <div className="min-h-screen bg-background text-foreground p-6">
+    <html>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <div className="min-h-screen bg-background text-foreground p-6">
+          {/* Wrap the entire app with AchievementsProvider */}
+          <AchievementsProvider>
             {children}
-          </div>
-        </body>
-      </html>
-    </AchievementsProvider>
+          </AchievementsProvider>
+        </div>
+      </body>
+    </html>
   );
 }

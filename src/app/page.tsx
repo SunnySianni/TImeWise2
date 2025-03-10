@@ -46,7 +46,7 @@ const TimerPage: React.FC = () => {
       interval = setInterval(() => {
         setTimeRemaining((prevTime) => prevTime - 1);
       }, 1000);
-    } else if (timeRemaining === 0) {
+    } else if (timeRemaining === 0 && timerState === 'running') {
       setSessionComplete(true); // Mark session complete when time is up
       setTimerState('idle');
       unlockAchievement('first_session_complete'); // Unlock achievement after the first session is complete
