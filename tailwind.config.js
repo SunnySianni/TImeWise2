@@ -1,22 +1,22 @@
 module.exports = {
-  content: [
-    "./src/app/**/*.{js,ts,jsx,tsx}",
-    "./src/components/**/*.{js,ts,jsx,tsx}",
-  ],
+  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+  darkMode: 'class', // Enables dark mode via class
   theme: {
     extend: {
       colors: {
-        background: 'var(--background)',  // Custom background color
-        foreground: 'var(--foreground)',  // Custom foreground/text color
-        primary: 'var(--primary)',        // Custom primary color
-        secondary: 'var(--secondary)',    // Custom secondary color
-        accent: 'var(--accent)',          // Custom accent color
+        lightBackground: '#ec4899', // Pink background for light mode
+        darkBackground: '#6b21a8',  // Violet background for dark mode
+        lightForeground: '#ffffff', // White foreground for light mode
+        darkForeground: '#f3e8ff',  // Light violet foreground for dark mode
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'Arial', 'Helvetica', 'sans-serif'],
-        mono: ['var(--font-mono)', 'monospace'],
+        sans: ['Arial', 'Helvetica', 'sans-serif'],
+        mono: ['monospace'],
       },
     },
+  },
+  variants: {
+    extend: {},
   },
   plugins: [],
 };
