@@ -20,7 +20,7 @@
 /* Dark mode variables */
 [data-theme='dark'] {
   --background: #27182e; /* Dark background */
-  --foreground: #1fdfec; /* Light text */
+  --foreground: #440e3d; /* should be a Light-colored text */
   --primary: #3b82f6; /* Keep primary blue */
   --secondary: #9333ea; /* Keep secondary purple */
   --accent: #ec4899; /* Keep accent pink */

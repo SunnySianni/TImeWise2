@@ -2,10 +2,20 @@ import { useState, useEffect } from 'react';
 
 // Component to manage the break timer
 const BreakTimer = ({ focusSessionComplete }: { focusSessionComplete: boolean }) => {
-  const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes break
+  const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes break default
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true); // Handle sound setting
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true); // Handle notifications setting
 
-  // Start the break timer when focus session is complete
+  // Load sound and notifications settings from localStorage
+  useEffect(() => {
+    const soundSetting = localStorage.getItem('soundEnabled');
+    const notificationsSetting = localStorage.getItem('notificationsEnabled');
+    setSoundEnabled(soundSetting === 'true');
+    setNotificationsEnabled(notificationsSetting === 'true');
+  }, []);
+
+  // Start or pause the break timer based on focus session completion
   useEffect(() => {
     if (focusSessionComplete) {
       setIsRunning(true); // Start break timer
@@ -14,7 +24,7 @@ const BreakTimer = ({ focusSessionComplete }: { focusSessionComplete: boolean })
     }
   }, [focusSessionComplete]);
 
-  // Decrement the break timer every second
+  // Decrement timer and handle events when timer finishes
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isRunning) {
@@ -22,16 +32,24 @@ const BreakTimer = ({ focusSessionComplete }: { focusSessionComplete: boolean })
         setTimeLeft((prevTime) => {
           if (prevTime <= 1) {
             clearInterval(interval);
-            return 0; // Stop the timer when it reaches 0
+            // Check if notifications are enabled
+            if (notificationsEnabled) {
+              alert("Break complete!"); // Display a notification if enabled
+            }
+            if (soundEnabled) {
+              const audio = new Audio('/sound/arcade_level.mp3'); // Replace with actual sound file path
+              audio.play(); // Play sound if enabled
+            }
+            return 0;
           }
           return prevTime - 1;
         });
       }, 1000);
     }
     return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, [isRunning]);
+  }, [isRunning, soundEnabled, notificationsEnabled]);
 
-  // Format time in mm:ss
+  // Format the time in mm:ss format
   const formatTime = (time: number): string => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
@@ -42,7 +60,6 @@ const BreakTimer = ({ focusSessionComplete }: { focusSessionComplete: boolean })
     <div className="p-4 mt-4">
       <h3 className="text-lg">Break Time</h3>
       <div className="mt-2 text-xl">{formatTime(timeLeft)}</div>
-      {isRunning && timeLeft === 0 && <p>Break complete!</p>}
     </div>
   );
 };
