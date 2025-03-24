@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const NotificationSettings = () => {
+const Settings = () => {
   // State to check if we are on the client
   const [isClient, setIsClient] = useState(false);
 
@@ -54,8 +54,11 @@ const NotificationSettings = () => {
   const addPreset = () => {
     const name = prompt("Enter preset name:");
     const duration = parseInt(prompt("Enter duration (in seconds):") || "0", 10);
-    if (name && duration) {
+
+    if (name && duration > 0) {
       setTimerPresets((prevPresets) => [...prevPresets, { name, duration }]);
+    } else {
+      alert("Please enter valid preset data.");
     }
   };
 
@@ -111,4 +114,4 @@ const NotificationSettings = () => {
   );
 };
 
-export default NotificationSettings;
+export default Settings;

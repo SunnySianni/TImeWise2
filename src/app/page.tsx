@@ -3,6 +3,7 @@ import { SettingsProvider } from "@/context/SettingsContext";
 import React, { useState, useEffect } from "react";
 import TimerControls from "@/components/timer/TimerControls"; // Import TimerControls
 import { useAchievements } from "@/context/AchievementsContext"; // Import the achievements context
+import HistoryComponent from "@/components/data/HistoryComponent"; // Import the HistoryComponent
 
 // Define timer state types
 type TimerState = "idle" | "running" | "paused";
@@ -97,7 +98,8 @@ const TimerComponent: React.FC = () => {
         <div className="mt-4 text-2xl font-semibold text-white">Session Complete!</div>
       )}
 
-      {displayAchievements()}
+      {/* Display History Component */}
+      <HistoryComponent />
     </div>
   );
 };

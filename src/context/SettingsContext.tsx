@@ -31,14 +31,23 @@ const SettingsContext = createContext<{
 
 // Provider component
 export const SettingsProvider = ({ children }: { children: React.ReactNode }) => {
-  const [settings, setSettings] = useState<Settings>(() => {
-    // Load from localStorage if available
-    const savedSettings = localStorage.getItem("settings");
-    return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
-  });
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
+
+  // Ensure localStorage is only accessed client-side
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedSettings = localStorage.getItem("settings");
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings));
+      }
+    }
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("settings", JSON.stringify(settings));
+    // Save settings to localStorage when they change
+    if (typeof window !== "undefined") {
+      localStorage.setItem("settings", JSON.stringify(settings));
+    }
   }, [settings]);
 
   const updateSettings = (newSettings: Partial<Settings>) => {

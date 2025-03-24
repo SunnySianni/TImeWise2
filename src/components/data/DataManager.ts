@@ -1,11 +1,19 @@
 import { saveToStorage, loadFromStorage } from "./StorageHelper";
 
+// Only use localStorage on the client side
+const isClient = typeof window !== 'undefined';
+
 export const saveSessionHistory = (session: { type: string; duration: number; completed: boolean }) => {
-  const history = loadFromStorage("sessionHistory", []);
-  history.push(session);
-  saveToStorage("sessionHistory", history);
+  if (isClient) {
+    const history = loadFromStorage("sessionHistory", []);
+    history.push(session);
+    saveToStorage("sessionHistory", history);
+  }
 };
 
 export const getSessionHistory = () => {
-  return loadFromStorage("sessionHistory", []);
+  if (isClient) {
+    return loadFromStorage("sessionHistory", []);
+  }
+  return []; // Return empty array for server-side rendering
 };
