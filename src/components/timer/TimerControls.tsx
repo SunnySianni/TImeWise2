@@ -40,9 +40,9 @@ const TimerControls: React.FC<TimerControlsProps> = ({
   // Update weekly focus time when the session is completed
   useEffect(() => {
     if (timerState === 'idle' && timeRemaining === 0) {
-      updateWeeklyFocusTime(25 * 60); // Add 25 minutes to the weekly focus time when the session ends
+      updateWeeklyFocusTime(weeklyFocusTime + 25 * 60); // Add 25 minutes to the weekly focus time when the session ends
     }
-  }, [timeRemaining, timerState, updateWeeklyFocusTime]);
+  }, [timeRemaining, timerState, updateWeeklyFocusTime, weeklyFocusTime]); // Ensure this effect only runs when necessary
 
   // Calculate progress towards the weekly goal
   const weeklyProgress = weeklyFocusGoal > 0

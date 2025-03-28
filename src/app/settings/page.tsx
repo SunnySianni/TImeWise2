@@ -8,8 +8,9 @@ const Settings = () => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // Only run this once on mount (this will ensure it doesn't cause an infinite loop)
     setIsClient(true);
-  }, []);
+  }, []); // Empty dependency array ensures this runs only once
 
   const handleNotificationToggle = () => {
     updateSettings({ notifications: !settings.notifications }); // Update notifications setting in context
@@ -59,7 +60,7 @@ const Settings = () => {
     }); // Remove a preset from the timerPresets in context
   };
 
-  if (!isClient) return null;
+  if (!isClient) return null; // Don't render anything until the component has mounted
 
   return (
     <div className="p-4 bg-gray-100 rounded-lg shadow-md max-w-md mx-auto">

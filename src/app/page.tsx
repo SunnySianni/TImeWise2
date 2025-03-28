@@ -101,8 +101,7 @@ const TimerComponent: React.FC = () => {
         <div className="mt-4 text-2xl font-semibold text-white">Session Complete!</div>
       )}
 
-      {/* Display Achievements */}
-      {displayAchievements()}
+      
 
       {/* Display History Component */}
       <HistoryComponent />
