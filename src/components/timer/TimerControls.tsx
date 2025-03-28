@@ -1,7 +1,9 @@
 'use client'; // Mark this file as a client component
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProgressBar from '../common/ProgressBar'; // Ensure the correct import path
+import { useSettings } from 'src/context/SettingsContext'; // Import the useSettings hook
+import { useAchievements } from 'src/context/AchievementsContext'; // Import achievements context to track progress
 
 interface TimerControlsProps {
   timeRemaining: number;
@@ -20,8 +22,13 @@ const TimerControls: React.FC<TimerControlsProps> = ({
 }) => {
   const [inputTime, setInputTime] = useState<number>(Math.floor(timeRemaining / 60)); // Initial time in minutes
   
-  const totalTime = 25 * 60; // Total time in seconds (25 minutes)
+  const { weeklyFocusGoal, updateWeeklyFocusTime } = useSettings(); // Get weekly focus goal and update function
+  const { weeklyFocusTime } = useAchievements(); // Get the weekly focus time progress
 
+  const totalTime = 25 * 60; // Total time in seconds (25 minutes)
+  const progress = timeRemaining > 0 ? timeRemaining / totalTime : 0;
+
+  // Function to handle the time change
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (value > 0) {
@@ -30,7 +37,17 @@ const TimerControls: React.FC<TimerControlsProps> = ({
     }
   };
 
-  const progress = timeRemaining > 0 ? timeRemaining / totalTime : 0;
+  // Update weekly focus time when the session is completed
+  useEffect(() => {
+    if (timerState === 'idle' && timeRemaining === 0) {
+      updateWeeklyFocusTime(25 * 60); // Add 25 minutes to the weekly focus time when the session ends
+    }
+  }, [timeRemaining, timerState, updateWeeklyFocusTime]);
+
+  // Calculate progress towards the weekly goal
+  const weeklyProgress = weeklyFocusGoal > 0
+    ? (weeklyFocusTime / (weeklyFocusGoal * 60)) * 100 // Convert goal from minutes to seconds
+    : 0;  // Handle edge case where weeklyFocusGoal might be 0
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -54,6 +71,11 @@ const TimerControls: React.FC<TimerControlsProps> = ({
         className={`text-5xl font-bold my-4 ${timerState === 'running' ? 'text-black' : 'text-white'}`} // Adjust font size and color
       >
         {`${Math.floor(timeRemaining / 60)}:${String(timeRemaining % 60).padStart(2, '0')}`}
+      </div>
+
+      {/* Weekly Progress */}
+      <div className="text-xs mb-4">
+        <span>Weekly Focus Progress: {Math.floor(weeklyProgress)}%</span>
       </div>
 
       {/* Timer Controls */}

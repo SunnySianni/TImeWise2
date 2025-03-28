@@ -7,7 +7,11 @@ interface ProgressBarProps {
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   const radius = 45; // Radius of the circle
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - progress * circumference;
+
+  // Ensure valid values for circumference and progress, fallback to defaults if needed
+  const strokeDashoffset = !isNaN(circumference) && !isNaN(progress)
+    ? circumference - progress * circumference
+    : 0; // Fallback to 0 if invalid values
 
   return (
     <svg

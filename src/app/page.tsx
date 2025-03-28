@@ -1,8 +1,9 @@
 'use client';  // Ensure this file runs on the client-side
+
 import { SettingsProvider } from "@/context/SettingsContext";
 import React, { useState, useEffect } from "react";
 import TimerControls from "@/components/timer/TimerControls"; // Import TimerControls
-import { useAchievements } from "@/context/AchievementsContext"; // Import the achievements context
+import { useAchievements, AchievementsProvider } from "@/context/AchievementsContext"; // Import the achievements context
 import HistoryComponent from "@/components/data/HistoryComponent"; // Import the HistoryComponent
 
 // Define timer state types
@@ -11,9 +12,11 @@ type TimerState = "idle" | "running" | "paused";
 const TimerPage: React.FC = () => {
   return (
     <SettingsProvider>
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200 dark:bg-gray-900">
-        <TimerComponent />
-      </div>
+      <AchievementsProvider> {/* Ensure the AchievementsProvider wraps your app */}
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200 dark:bg-gray-900">
+          <TimerComponent />
+        </div>
+      </AchievementsProvider>
     </SettingsProvider>
   );
 };
@@ -97,6 +100,9 @@ const TimerComponent: React.FC = () => {
       {sessionComplete && (
         <div className="mt-4 text-2xl font-semibold text-white">Session Complete!</div>
       )}
+
+      {/* Display Achievements */}
+      {displayAchievements()}
 
       {/* Display History Component */}
       <HistoryComponent />

@@ -1,126 +1,151 @@
-"use client"; // Mark this file as a client-side component
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts"; // Import Recharts for the chart
-
+// Define the Achievement structure
 interface Achievement {
   id: string;
   name: string;
-  unlocked: boolean;
-  criteria: any;
+  progress: number; // Represents the progress as a percentage (0 - 100)
+  unlocked: boolean; // Boolean flag to track whether the achievement is unlocked
 }
 
+// Define the context structure
 interface AchievementsContextType {
   achievements: Achievement[];
-  unlockAchievement: (achievementId: string) => void;
-  updateProgress: (id: string, progress: number) => void; // Update progress based on user actions
+  streak: number;
+  weeklyFocusGoal: number; // The user's weekly focus goal in minutes
+  weeklyFocusTime: number; // The user's total focus time for the week in minutes
+  addAchievement: (achievement: Achievement) => void;
+  incrementStreak: () => void;
+  updateProgress: (id: string, progress: number) => void;
+  unlockAchievement: (id: string) => void;
+  setWeeklyFocusGoal: (goal: number) => void; // Set weekly focus goal
+  updateWeeklyFocusTime: (sessionDuration: number) => void; // Update weekly focus time
 }
 
+// Default achievements list 🎮
+const defaultAchievements: Achievement[] = [
+  { id: "1", name: "First Focus", progress: 0, unlocked: false },
+  { id: "2", name: "Steady Starter", progress: 0, unlocked: false },
+  { id: "3", name: "Focus Apprentice", progress: 0, unlocked: false },
+  { id: "4", name: "Zen Master", progress: 0, unlocked: false },
+  { id: "5", name: "Ultimate Focus", progress: 0, unlocked: false },
+  { id: "6", name: "Early Bird", progress: 0, unlocked: false },
+  { id: "7", name: "Night Owl", progress: 0, unlocked: false },
+  { id: "8", name: "Long Hauler", progress: 0, unlocked: false },
+  { id: "9", name: "Consistency King", progress: 0, unlocked: false },
+  { id: "10", name: "Session Marathon", progress: 0, unlocked: false },
+];
+
+// Create the context
 const AchievementsContext = createContext<AchievementsContextType | undefined>(undefined);
 
-export const AchievementsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Loading achievements from localStorage to persist progress across sessions
-  const storedAchievements = typeof window !== "undefined" ? localStorage.getItem("achievements") : null;
-  const initialAchievements = storedAchievements
-    ? JSON.parse(storedAchievements)
-    : [
-        { id: "first_session_complete", name: "First Session Complete", unlocked: false, criteria: { sessions: 1 } },
-        { id: "five_sessions_complete", name: "Five Sessions Completed", unlocked: false, criteria: { sessions: 5 } },
-        { id: "ten_sessions_complete", name: "Ten Sessions Completed", unlocked: false, criteria: { sessions: 10 } },
-        { id: "power_user", name: "Power User (50 sessions)", unlocked: false, criteria: { sessions: 50 } },
-        { id: "focus_master", name: "Focus Master (Focus for 25 minutes)", unlocked: false, criteria: { focusTime: 25 } },
-        { id: "streak_achievement", name: "Streak Achievement (Complete 5 sessions in a row)", unlocked: false, criteria: { streak: 5 } },
-        { id: "break_time", name: "Taking a Break (After every session)", unlocked: false, criteria: { breakTime: true } },
-        { id: "no_break_focus", name: "No Break Focus (Complete 3 sessions without a break)", unlocked: false, criteria: { noBreakSessions: 3 } },
-        { id: "night_owl", name: "Night Owl (Complete a session after 10 PM)", unlocked: false, criteria: { nightSession: true } },
-        { id: "early_bird", name: "Early Bird (Complete a session before 6 AM)", unlocked: false, criteria: { earlySession: true } },
-        { id: "consistent", name: "Consistent (Complete sessions for 7 days straight)", unlocked: false, criteria: { consecutiveDays: 7 } },
-      ];
+// Provider component
+export const AchievementsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [achievements, setAchievements] = useState<Achievement[]>(defaultAchievements);
+  const [streak, setStreak] = useState<number>(0);
+  const [weeklyFocusGoal, setWeeklyFocusGoal] = useState<number>(10 * 60); // Default: 10 hours in minutes
+  const [weeklyFocusTime, setWeeklyFocusTime] = useState<number>(0); // Total focus time for the week in minutes
 
-  const [achievements, setAchievements] = useState<Achievement[]>(initialAchievements);
-
-  // Persist achievements to localStorage when they change
+  // Load saved achievements, streak, and focus goal from localStorage
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("achievements", JSON.stringify(achievements));
-    }
-  }, [achievements]);
+    const savedAchievements = localStorage.getItem("achievements");
+    const savedStreak = localStorage.getItem("streak");
+    const savedGoal = localStorage.getItem("weeklyFocusGoal");
+    const savedFocusTime = localStorage.getItem("weeklyFocusTime");
 
-  const unlockAchievement = (achievementId: string) => {
+    if (savedAchievements) {
+      setAchievements(JSON.parse(savedAchievements));
+    }
+    if (savedStreak) {
+      setStreak(Number(savedStreak));
+    }
+    if (savedGoal) {
+      setWeeklyFocusGoal(Number(savedGoal));
+    }
+    if (savedFocusTime) {
+      setWeeklyFocusTime(Number(savedFocusTime));
+    }
+  }, []);
+
+  // Save achievements, streak, focus goal, and focus time to localStorage
+  useEffect(() => {
+    localStorage.setItem("achievements", JSON.stringify(achievements));
+    localStorage.setItem("streak", streak.toString());
+    localStorage.setItem("weeklyFocusGoal", weeklyFocusGoal.toString());
+    localStorage.setItem("weeklyFocusTime", weeklyFocusTime.toString());
+  }, [achievements, streak, weeklyFocusGoal, weeklyFocusTime]);
+
+  // Add new achievements dynamically
+  const addAchievement = (achievement: Achievement) => {
+    setAchievements((prevAchievements) => [...prevAchievements, achievement]);
+  };
+
+  // Increment streak count
+  const incrementStreak = () => {
+    setStreak((prevStreak) => prevStreak + 1);
+  };
+
+  // Update progress and auto-unlock achievements
+  const updateProgress = (id: string, progress: number) => {
     setAchievements((prevAchievements) =>
       prevAchievements.map((achievement) =>
-        achievement.id === achievementId ? { ...achievement, unlocked: true } : achievement
+        achievement.id === id
+          ? {
+              ...achievement,
+              progress: Math.min(progress, 100),
+              unlocked: Math.min(progress, 100) === 100, // Auto-unlock when reaching 100%
+            }
+          : achievement
       )
     );
   };
 
-  const updateProgress = (id: string, progress: number) => {
+  // Unlock achievement manually
+  const unlockAchievement = (id: string) => {
     setAchievements((prevAchievements) =>
-      prevAchievements.map((achievement) => {
-        if (achievement.id === id) {
-          if (achievement.criteria.sessions && progress >= achievement.criteria.sessions) {
-            return { ...achievement, unlocked: true };
-          }
-          if (achievement.criteria.focusTime && progress >= achievement.criteria.focusTime) {
-            return { ...achievement, unlocked: true };
-          }
-          if (achievement.criteria.streak && progress >= achievement.criteria.streak) {
-            return { ...achievement, unlocked: true };
-          }
-        }
-        return achievement;
-      })
+      prevAchievements.map((achievement) =>
+        achievement.id === id
+          ? { ...achievement, unlocked: true } // Unlock achievement
+          : achievement
+      )
     );
   };
 
-  // Calculate the unlocked achievements count
-  const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length;
-  const totalAchievements = achievements.length;
-  const unlockedPercentage = (unlockedAchievements / totalAchievements) * 100;
+  // Set weekly focus goal
+  const setWeeklyFocusGoalHandler = (goal: number) => {
+    setWeeklyFocusGoal(goal * 60); // Convert goal to minutes
+  };
 
-  // Data for the PieChart
-  const chartData = [
-    { name: "Unlocked", value: unlockedAchievements },
-    { name: "Locked", value: totalAchievements - unlockedAchievements },
-  ];
+  // Update weekly focus time
+  const updateWeeklyFocusTime = (sessionDuration: number) => {
+    setWeeklyFocusTime((prevFocusTime) => prevFocusTime + sessionDuration);
+  };
 
   return (
-    <AchievementsContext.Provider value={{ achievements, unlockAchievement, updateProgress }}>
+    <AchievementsContext.Provider
+      value={{
+        achievements,
+        streak,
+        weeklyFocusGoal,
+        weeklyFocusTime,
+        addAchievement,
+        incrementStreak,
+        updateProgress,
+        unlockAchievement,
+        setWeeklyFocusGoal: setWeeklyFocusGoalHandler,
+        updateWeeklyFocusTime,
+      }}
+    >
       {children}
-
-      {/* Chart showing achievement progress */}
-      <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Achievements Progress</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              dataKey="value"
-              nameKey="name"
-              outerRadius={80}
-              fill="#8884d8"
-              label
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.name === "Unlocked" ? "#4CAF50" : "#f44336"} />
-              ))}
-            </Pie>
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
     </AchievementsContext.Provider>
   );
 };
 
+// Custom hook to use the AchievementsContext
 export const useAchievements = (): AchievementsContextType => {
   const context = useContext(AchievementsContext);
-
   if (!context) {
     throw new Error("useAchievements must be used within an AchievementsProvider");
   }
-
   return context;
 };
-
-export { AchievementsContext };
