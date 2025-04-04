@@ -1,6 +1,6 @@
 'use client'; // Mark this file as a client component
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ProgressBar from '../common/ProgressBar'; // Ensure the correct import path
 import { useSettings } from 'src/context/SettingsContext'; // Import the useSettings hook
 import { useAchievements } from 'src/context/AchievementsContext'; // Import achievements context to track progress
@@ -25,8 +25,15 @@ const TimerControls: React.FC<TimerControlsProps> = ({
   const { weeklyFocusGoal, updateWeeklyFocusTime } = useSettings(); // Get weekly focus goal and update function
   const { weeklyFocusTime } = useAchievements(); // Get the weekly focus time progress
 
+  const focusTimeRef = useRef(weeklyFocusTime); // Track the latest weekly focus time
+
   const totalTime = 25 * 60; // Total time in seconds (25 minutes)
   const progress = timeRemaining > 0 ? timeRemaining / totalTime : 0;
+
+  // Keep the ref in sync with the latest focus time
+  useEffect(() => {
+    focusTimeRef.current = weeklyFocusTime;
+  }, [weeklyFocusTime]);
 
   // Function to handle the time change
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,9 +47,10 @@ const TimerControls: React.FC<TimerControlsProps> = ({
   // Update weekly focus time when the session is completed
   useEffect(() => {
     if (timerState === 'idle' && timeRemaining === 0) {
-      updateWeeklyFocusTime(weeklyFocusTime + 25 * 60); // Add 25 minutes to the weekly focus time when the session ends
+      const focusIncrement = 25 * 60;
+      updateWeeklyFocusTime(focusTimeRef.current + focusIncrement); // Use ref to avoid infinite loops
     }
-  }, [timeRemaining, timerState, updateWeeklyFocusTime, weeklyFocusTime]); // Ensure this effect only runs when necessary
+  }, [timeRemaining, timerState]);
 
   // Calculate progress towards the weekly goal
   const weeklyProgress = weeklyFocusGoal > 0
