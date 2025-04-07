@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAchievements } from "src/context/AchievementsContext";
 import Progress from "@/components/ui/Progress";
+import AchievementsList from '@/components/common/AchievementsList';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const AchievementsPage: React.FC = () => {
