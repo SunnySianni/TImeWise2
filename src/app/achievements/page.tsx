@@ -1,25 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useAchievements } from "src/context/AchievementsContext";
+import { useAchievements } from "@/context/AchievementsContext";
 import Progress from "@/components/ui/Progress";
 import AchievementsList from '@/components/common/AchievementsList';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const AchievementsPage: React.FC = () => {
-  const { achievements, streak, updateProgress, unlockAchievement } = useAchievements();
+  const { achievements, streak = 0, updateProgress, unlockAchievement } = useAchievements();
   const [filteredAchievements, setFilteredAchievements] = useState(achievements);
   const [selectedAchievement, setSelectedAchievement] = useState<string | null>(null);
 
-  // Update the filtered achievements list when achievements change
   useEffect(() => {
     setFilteredAchievements(achievements);
   }, [achievements]);
 
-  // Automatically unlock achievements when progress reaches 100%
   useEffect(() => {
     achievements.forEach((achievement) => {
-      if (!achievement.unlocked && achievement.progress >= 100) {
+      if (!achievement.unlocked && (achievement.progress ?? 0) >= 100) {
         unlockAchievement(achievement.id);
       }
     });
@@ -32,7 +30,6 @@ const AchievementsPage: React.FC = () => {
     setFilteredAchievements(filtered);
   };
 
-  // Descriptions for each achievement with clear requirements
   const achievementDescriptions: { [key: string]: string } = {
     "1": "Complete your first focus session by running the timer for at least one full cycle.",
     "2": "Accumulate a total of 25% of your weekly focus goal.",
@@ -53,7 +50,7 @@ const AchievementsPage: React.FC = () => {
 
   const chartData = achievements.map((ach) => ({
     name: ach.name,
-    progress: ach.progress,
+    progress: ach.progress ?? 0,
   }));
 
   return (
@@ -67,7 +64,6 @@ const AchievementsPage: React.FC = () => {
         className="search-bar p-2 border rounded-md w-full mb-4"
       />
 
-      {/* Achievement Progress Bar Chart */}
       <div className="chart-container bg-gray-100 p-4 rounded-lg mb-6">
         <h2 className="text-xl font-semibold mb-2">Achievement Progress</h2>
         <ResponsiveContainer width="100%" height={250}>
@@ -80,7 +76,6 @@ const AchievementsPage: React.FC = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* List of Achievements */}
       <div className="achievements-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredAchievements.length > 0 ? (
           filteredAchievements.map((achievement) => (
@@ -100,7 +95,7 @@ const AchievementsPage: React.FC = () => {
                 Status: {achievement.unlocked ? "✅ Unlocked" : "🔒 Locked"}
               </p>
 
-              <Progress value={achievement.progress} />
+              <Progress value={achievement.progress ?? 0} />
 
               {selectedAchievement === achievement.id && (
                 <div className="achievement-description mt-2 p-2 bg-gray-200 rounded">

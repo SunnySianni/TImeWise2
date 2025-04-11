@@ -73,6 +73,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   const [theme, setTheme] = useState("light");
   const [isSettingsOpen, setSettingsOpen] = useState(false);
 
+  // Load saved theme from localStorage when component mounts
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme) {
@@ -80,15 +81,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
     }
   }, []);
 
+  // Set the document theme and save it to localStorage whenever theme changes
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  // Toggle between light and dark themes
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
   };
 
+  // Toggle settings panel visibility
   const toggleSettings = () => {
     setSettingsOpen((prev) => !prev);
   };

@@ -23,7 +23,7 @@ const TimerControls: React.FC<TimerControlsProps> = ({
   const [inputTime, setInputTime] = useState<number>(Math.floor(timeRemaining / 60));
   
   const { weeklyFocusGoal, updateWeeklyFocusTime } = useSettings();
-  const { weeklyFocusTime } = useAchievements();
+  const { weeklyFocusTime, incrementWeeklyFocusTime } = useAchievements();
 
   const prevTimeRef = useRef(timeRemaining);
 

@@ -1,10 +1,10 @@
-'use client';  // Ensure this file runs on the client-side
+'use client'; // Ensure this file runs on the client-side
 
 import { SettingsProvider } from "@/context/SettingsContext";
 import React, { useState, useEffect } from "react";
-import TimerControls from "@/components/timer/TimerControls"; // Import TimerControls
-import { useAchievements, AchievementsProvider } from "@/context/AchievementsContext"; // Import the achievements context
-import HistoryComponent from "@/components/data/HistoryComponent"; // Import the HistoryComponent
+import TimerControls from "@/components/timer/TimerControls";
+import { useAchievements, AchievementsProvider } from "@/context/AchievementsContext";
+import HistoryComponent from "../components/data/HistoryComponent";
 
 // Define timer state types
 type TimerState = "idle" | "running" | "paused";
@@ -12,7 +12,7 @@ type TimerState = "idle" | "running" | "paused";
 const TimerPage: React.FC = () => {
   return (
     <SettingsProvider>
-      <AchievementsProvider> {/* Ensure the AchievementsProvider wraps your app */}
+      <AchievementsProvider>
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200 dark:bg-gray-900">
           <TimerComponent />
         </div>
@@ -23,35 +23,25 @@ const TimerPage: React.FC = () => {
 
 const TimerComponent: React.FC = () => {
   const [timerState, setTimerState] = useState<TimerState>("idle");
-  const [timeRemaining, setTimeRemaining] = useState<number>(25 * 60); // Default to 25-minute session in seconds
+  const [timeRemaining, setTimeRemaining] = useState<number>(25 * 60); // 25 minutes
   const [sessionComplete, setSessionComplete] = useState<boolean>(false);
 
-  const { achievements, unlockAchievement } = useAchievements(); // Use achievements context
+  const { updateStreakAndGoals } = useAchievements();
 
-  // Handle start/pause functionality
   const handleStartPause = () => {
-    if (timerState === "running") {
-      setTimerState("paused");
-    } else {
-      setTimerState("running");
-    }
+    setTimerState((prev) => (prev === "running" ? "paused" : "running"));
   };
 
-  // Reset functionality
   const handleReset = () => {
-    setTimeRemaining(25 * 60); // Reset to default 25 minutes
+    setTimeRemaining(25 * 60);
     setTimerState("idle");
     setSessionComplete(false);
   };
 
-  // Update the time based on user input
-  const handleTimeChange = (time: number) => {
-    setTimeRemaining(time);
-    setTimerState("idle"); // Ensure timer is idle when the time is updated
-    setSessionComplete(false); // Reset the session complete state
+  const handleTimeChange = (newTime: number) => {
+    setTimeRemaining(newTime);
   };
 
-  // Timer countdown effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -60,28 +50,15 @@ const TimerComponent: React.FC = () => {
         setTimeRemaining((prevTime) => prevTime - 1);
       }, 1000);
     } else if (timeRemaining === 0 && timerState === "running") {
-      setSessionComplete(true); // Mark session complete when time is up
+      setSessionComplete(true);
       setTimerState("idle");
-      unlockAchievement("first_session_complete"); // Unlock achievement after the first session is complete
+
+      // ✅ Send a number (seconds completed), not a boolean
+      updateStreakAndGoals(25 * 60); // You could also send actual elapsed time if you track it
     }
 
-    // Cleanup the interval on component unmount or when timer is paused
     return () => clearInterval(interval);
-  }, [timerState, timeRemaining, unlockAchievement]);
-
-  // Display achievements
-  const displayAchievements = () => (
-    <div className="mt-6">
-      <h2 className="text-xl text-white font-semibold">Achievements</h2>
-      <ul className="mt-2 text-white">
-        {achievements.map((achievement) => (
-          <li key={achievement.id} className={`py-1 ${achievement.unlocked ? "text-green-400" : "text-gray-400"}`}>
-            {achievement.name} - {achievement.unlocked ? "Unlocked" : "Locked"}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  }, [timerState, timeRemaining, updateStreakAndGoals]);
 
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-lg shadow-lg">
@@ -93,7 +70,7 @@ const TimerComponent: React.FC = () => {
           timerState={timerState}
           onStartPause={handleStartPause}
           onReset={handleReset}
-          onTimeChange={handleTimeChange}
+          onTimeChange={handleTimeChange} // ✅ Now passed properly
         />
       </div>
 
@@ -101,9 +78,6 @@ const TimerComponent: React.FC = () => {
         <div className="mt-4 text-2xl font-semibold text-white">Session Complete!</div>
       )}
 
-      
-
-      {/* Display History Component */}
       <HistoryComponent />
     </div>
   );
