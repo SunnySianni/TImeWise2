@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 // Define the Session type to match the actual data structure, including 'completed' property
 export interface Session {
   type: string;
-  duration: number;
-  completed: boolean;  // Ensure 'completed' is part of the session data
+  duration: number; // in minutes now
+  completed: boolean;
 }
 
 interface HistoryComponentProps {
-  sessions: Session[];  // Add the 'sessions' prop, which will be passed to this component
+  sessions: Session[];
 }
 
 const HistoryComponent: React.FC<HistoryComponentProps> = ({ sessions }) => {
@@ -27,7 +27,7 @@ const HistoryComponent: React.FC<HistoryComponentProps> = ({ sessions }) => {
               className="p-3 border border-gray-300 dark:border-gray-700 rounded-md flex justify-between items-center"
             >
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                {session.type} – {session.duration} seconds
+                {session.type} – {session.duration} {session.duration === 1 ? "minute" : "minutes"}
               </span>
               <span
                 className={`text-xs font-semibold px-2 py-1 rounded-full ${
