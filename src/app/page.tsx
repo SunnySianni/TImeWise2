@@ -4,7 +4,7 @@ import { SettingsProvider } from "@/context/SettingsContext";
 import React, { useState, useEffect } from "react";
 import TimerControls from "@/components/timer/TimerControls";
 import { useAchievements, AchievementsProvider } from "@/context/AchievementsContext";
-import { TimerProvider, useTimer } from "@/context/TimerContext";  // Correct import of useTimer
+import { useTimer, TimerProvider } from "@/context/TimerContext"; // ✅ Import TimerProvider
 import HistoryComponent from "../components/data/HistoryComponent";
 
 type TimerState = "idle" | "running" | "paused";
@@ -13,7 +13,7 @@ const TimerPage: React.FC = () => {
   return (
     <SettingsProvider>
       <AchievementsProvider>
-        <TimerProvider>  {/* Wrap TimerComponent with TimerProvider */}
+        <TimerProvider> {/* Ensure TimerProvider wraps the component tree */}
           <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200 dark:bg-gray-900">
             <TimerComponent />
           </div>
@@ -25,11 +25,16 @@ const TimerPage: React.FC = () => {
 
 const TimerComponent: React.FC = () => {
   const [timerState, setTimerState] = useState<TimerState>("idle");
-  const [timeRemaining, setTimeRemaining] = useState<number>(25 * 60);
+  const [timeRemaining, setTimeRemaining] = useState<number>(25 * 60); // 25 minutes
   const [sessionComplete, setSessionComplete] = useState<boolean>(false);
+  const [hasMounted, setHasMounted] = useState<boolean>(false);
 
   const { updateStreakAndGoals } = useAchievements();
-  const { completeSession, sessionHistory, setDuration } = useTimer();  // Use useTimer here
+  const { completeSession, sessionHistory, setDuration } = useTimer();
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   const handleStartPause = () => {
     setTimerState((prev) => (prev === "running" ? "paused" : "running"));
@@ -43,7 +48,7 @@ const TimerComponent: React.FC = () => {
 
   const handleTimeChange = (newTime: number) => {
     setTimeRemaining(newTime);
-    setDuration(newTime); // Update the timer's duration in the context
+    setDuration(newTime);
   };
 
   useEffect(() => {
@@ -57,16 +62,22 @@ const TimerComponent: React.FC = () => {
       setSessionComplete(true);
       setTimerState("idle");
 
-      updateStreakAndGoals(timeRemaining); // Update streak and goals with actual remaining time
+      const sessionDuration = 25 * 60; // or use timeRemaining if it was customized
 
-      // Complete session by logging it with the updated 'completeSession' logic
-      completeSession();
+      updateStreakAndGoals(sessionDuration);
 
-      // Reset session state for next round
+      completeSession({
+        type: "focus",
+        duration: sessionDuration,
+        completed: true,
+        timestamp: new Date().toISOString(), // ✅ Include timestamp
+      });
     }
 
     return () => clearInterval(interval);
   }, [timerState, timeRemaining, updateStreakAndGoals, completeSession]);
+
+  if (!hasMounted) return null;
 
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-lg shadow-lg">

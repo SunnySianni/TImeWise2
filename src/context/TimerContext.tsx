@@ -26,7 +26,7 @@ interface TimerContextType {
   startTimer: () => void;
   stopTimer: () => void;
   resetTimer: () => void;
-  completeSession: () => void;
+  completeSession: (session?: Session) => void; // ✅ Accept optional argument
   setDuration: (newDuration: number) => void;
 }
 
@@ -74,16 +74,18 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
 
   const startTimer = () => setIsRunning(true);
   const stopTimer = () => setIsRunning(false);
+
   const resetTimer = () => {
     setIsRunning(false);
     setDuration(25 * 60); // Reset duration to 25 minutes
   };
 
-  // Log session when completed
-  const completeSession = () => {
+  // ✅ Updated to accept optional session override
+  const completeSession = (session?: Session) => {
     const minutes = Math.floor(duration / 60);
-    const newSession: Session = {
-      type: 'focus', // Set 'focus' type here, could extend for 'break' if needed
+
+    const newSession: Session = session ?? {
+      type: 'focus',
       duration: minutes,
       completed: true,
       timestamp: new Date().toLocaleString(),
@@ -91,7 +93,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
 
     setSessionHistory((prev) => [...prev, newSession]);
     setCompletedSessions((prev) => prev + 1);
-    setWeeklyFocusTime((prev) => prev + minutes);
+    setWeeklyFocusTime((prev) => prev + newSession.duration);
     setIsRunning(false);
   };
 
